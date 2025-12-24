@@ -16,13 +16,13 @@ public class Produto {
     private int idProduto;
 
     @Column(name = "DESCRICAO")
-    public String descricao;
+    private String descricao;
 
     @Column(name = "VALOR_CUSTO")
     private double valorCusto;
 
     @Column(name = "VALOR_VENDA")
-    public double valorVenda;
+    private double valorVenda;
 
     @ManyToOne
     @JoinColumn(name = "ID_AGENDAMENTO")

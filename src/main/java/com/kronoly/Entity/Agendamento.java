@@ -41,6 +41,9 @@ public class Agendamento {
     @Column(name = "NOME_CLIENTE")
     public String nomeCliente;
 
+    @Column(name = "CONTATO_CLIENTE")
+    public int contatoCliente;
+
     @ManyToOne
     @JoinColumn(name = "ID_CLIENTE")
     private Cliente cliente;

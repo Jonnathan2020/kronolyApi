@@ -1,10 +1,7 @@
 package com.kronoly.Service;
 
 import com.kronoly.DTO.*;
-import com.kronoly.Entity.Agenda;
-import com.kronoly.Entity.Agendamento;
-import com.kronoly.Entity.Cliente;
-import com.kronoly.Entity.Empresa;
+import com.kronoly.Entity.*;
 import com.kronoly.Entity.Enuns.StatusAgendamento;
 import com.kronoly.Repository.AgendamentoRepository;
 import com.kronoly.Repository.ClienteRepository;
@@ -12,6 +9,8 @@ import com.kronoly.Repository.EmpresaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,6 +25,22 @@ public class AgendamentoService {
     @Autowired
     private ClienteRepository clienteRepository;
 
+    private LocalDateTime calcularDataFim(
+            LocalDateTime dataInicio,
+            List<Servico> servicos
+    ) {
+        if (dataInicio == null || servicos == null || servicos.isEmpty()) {
+            return dataInicio;
+        }
+
+        long minutosTotais = servicos.stream()
+                .filter(s -> s.getTempoEstimado() != null)
+                .mapToLong(Servico::getTempoEstimado)
+                .sum();
+
+        return dataInicio.plusMinutes(minutosTotais);
+    }
+
     public AgendamentoDTO cadastrarAgendamento(AgendamentoCreateDTO agendamentoCreateDTO){
 
         Cliente cliente = clienteRepository.findById(agendamentoCreateDTO.getIdCliente())
@@ -38,9 +53,19 @@ public class AgendamentoService {
         agendamento.setDescricao(agendamentoCreateDTO.getDescricao());
         agendamento.setProdutos(agendamentoCreateDTO.getProdutos());
         agendamento.setServicos(agendamentoCreateDTO.getServicos());
-        agendamento.setDataInicio(agendamentoCreateDTO.getDataInicio());
-        agendamento.setDataFim(agendamentoCreateDTO.getDataFim());
+        LocalDateTime dataHora = LocalDateTime.of(
+                agendamentoCreateDTO.getData(),
+                agendamentoCreateDTO.getHora()
+        );
+        agendamento.setDataInicio(dataHora);
+        // 🔥 calcula automaticamente
+        LocalDateTime dataFim = calcularDataFim(
+                dataHora,
+                agendamentoCreateDTO.getServicos()
+        );
+        agendamento.setDataFim(dataFim);
         agendamento.setNomeCliente(agendamentoCreateDTO.getNomeCliente());
+        agendamento.setContatoCliente(agendamentoCreateDTO.getContatoCliente());
         agendamento.setCliente(cliente);
         agendamento.setEmpresa(empresa);
         agendamento.setValorServicos(agendamentoCreateDTO.getValorServicos());
@@ -104,6 +129,7 @@ public class AgendamentoService {
                     agendamento.getDataInicio(),
                     agendamento.getDataFim(),
                     agendamento.getNomeCliente(),
+                    agendamento.getContatoCliente(),
                     agendamento.getValorServicos(),
                     agendamento.getValorProdutos(),
                     agendamento.getFormaPagtoEnum(),
@@ -123,6 +149,68 @@ public class AgendamentoService {
 
         return new AgendamentoDTO(agendamentoRepository.save(agendamentoEspecifico));
     }
+
+    public List<AgendamentoDTO> consultarAgendamentoPorData(LocalDate data) {
+
+        LocalDateTime inicioDoDia = data.atStartOfDay();
+        LocalDateTime fimDoDia = data.atTime(23, 59, 59);
+
+        List<Agendamento> agendamentos =
+                agendamentoRepository.findByDataInicioBetween(
+                        inicioDoDia,
+                        fimDoDia
+                );
+
+        return agendamentos.stream()
+                .map(ag -> new AgendamentoDTO(
+                        ag.getIdAgendamento(),
+                        ag.getTitulo(),
+                        ag.getDescricao(),
+                        ag.getDataInicio(),
+                        ag.getDataFim(),
+                        ag.getNomeCliente(),
+                        ag.getContatoCliente(),
+                        ag.getValorServicos(),
+                        ag.getValorProdutos(),
+                        ag.getFormaPagtoEnum(),
+                        ag.getStatusAgendamento(),
+
+                        ag.getCliente() != null
+                                ? new ClienteResumoDTO(
+                                ag.getCliente().getIdCliente(),
+                                ag.getCliente().getDocumento(),
+                                ag.getCliente().getNome(),
+                                ag.getCliente().getTelefone()
+                        )
+                                : null,
+
+                        ag.getEmpresa() != null
+                                ? new EmpresaResumoDTO(
+                                ag.getEmpresa().getIdEmpresa(),
+                                ag.getEmpresa().getDocumento(),
+                                ag.getEmpresa().getRazaoSocial(),
+                                ag.getEmpresa().getNomeFantasia(),
+                                ag.getEmpresa().getRepresentante(),
+                                ag.getEmpresa().getLogo(),
+                                ag.getEmpresa().getStatusEmpresaEnum()
+                        )
+                                : null,
+
+                        ag.getProdutos() != null
+                                ? ag.getProdutos().stream()
+                                .map(ProdutoResumoDTO::new)
+                                .toList()
+                                : null,
+
+                        ag.getServicos() != null
+                                ? ag.getServicos().stream()
+                                .map(ServicoResumoDTO::new)
+                                .toList()
+                                : null
+                ))
+                .toList();
+    }
+
 
     public List<AgendamentoDTO> consultarAgendamentosPorEmpresa(int idEmpresa) {
         // 1️⃣ Verifica se a empresa existe
@@ -144,6 +232,7 @@ public class AgendamentoService {
                 ag.getDataInicio(),
                 ag.getDataFim(),
                 ag.getNomeCliente(),
+                ag.getContatoCliente(),
                 ag.getValorServicos(),
                 ag.getValorProdutos(),
                 ag.getFormaPagtoEnum(),
@@ -199,6 +288,7 @@ public class AgendamentoService {
                 ag.getDataInicio(),
                 ag.getDataFim(),
                 ag.getNomeCliente(),
+                ag.getContatoCliente(),
                 ag.getValorServicos(),
                 ag.getValorProdutos(),
                 ag.getFormaPagtoEnum(),
@@ -247,6 +337,9 @@ public class AgendamentoService {
         if(agendamentoUpdateDTO.getNomeCliente() != null){
             agendamentoExistente.setNomeCliente(agendamentoUpdateDTO.getNomeCliente());
         }
+        if(agendamentoUpdateDTO.getContatoCliente() != 0){
+            agendamentoExistente.setContatoCliente(agendamentoUpdateDTO.getContatoCliente());
+        }
         if(agendamentoUpdateDTO.getDataInicio() != null){
             agendamentoExistente.setDataInicio(agendamentoUpdateDTO.getDataInicio());
         }
@@ -268,6 +361,17 @@ public class AgendamentoService {
         if(agendamentoUpdateDTO.getValorServicos() != -1000){
             agendamentoExistente.setValorServicos(agendamentoUpdateDTO.getValorServicos());
         }
+        if (agendamentoUpdateDTO.getDataInicio() != null ||
+                agendamentoUpdateDTO.getServicos() != null) {
+
+            agendamentoExistente.setDataFim(
+                    calcularDataFim(
+                            agendamentoExistente.getDataInicio(),
+                            agendamentoExistente.getServicos()
+                    )
+            );
+        }
+
 
         return agendamentoRepository.save(agendamentoExistente);
     }

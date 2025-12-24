@@ -26,6 +26,7 @@ public class AgendamentoDTO {
     private LocalDateTime dataFim;
 
     private String nomeCliente;
+    private int contatoCliente;
     private double valorServicos;
     private double valorProdutos;
     private FormaPagtoEnum formaPagtoEnum;
@@ -44,6 +45,7 @@ public class AgendamentoDTO {
             LocalDateTime dataInicio,
             LocalDateTime dataFim,
             String nomeCliente,
+            int contatoCliente,
             double valorServicos,
             double valorProdutos,
             FormaPagtoEnum formaPagtoEnum,
@@ -59,6 +61,7 @@ public class AgendamentoDTO {
         this.dataInicio = dataInicio;
         this.dataFim = dataFim;
         this.nomeCliente = nomeCliente;
+        this.contatoCliente = contatoCliente;
         this.valorServicos = valorServicos;
         this.valorProdutos = valorProdutos;
         this.formaPagtoEnum = formaPagtoEnum;

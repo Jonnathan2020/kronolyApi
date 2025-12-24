@@ -27,6 +27,7 @@ public class AgendamentoUpdateDTO {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm")
     public LocalDateTime dataFim;
     public String nomeCliente;
+    private int contatoCliente;
     private Cliente cliente;
     public Empresa empresa;
     public double valorServicos;

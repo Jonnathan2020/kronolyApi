@@ -3,11 +3,9 @@ package com.kronoly.DTO;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
-
 @Getter
 @Setter
-public class ServicoResumoDTO {
+public class ServicoUpdateDTO {
 
     private int idServico;
     private String descricao;
@@ -15,7 +13,7 @@ public class ServicoResumoDTO {
     private double valorCusto;
     private double valorServico;
 
-    public ServicoResumoDTO(int idServico, String descricao, Long tempoEstimado, double valorCusto, double valorServico) {
+    public ServicoUpdateDTO(int idServico, String descricao, Long tempoEstimado, double valorCusto, double valorServico) {
         this.idServico = idServico;
         this.descricao = descricao;
         this.tempoEstimado = tempoEstimado;
@@ -24,7 +22,7 @@ public class ServicoResumoDTO {
     }
 
     // Construtor auxiliar para conversão direta
-    public ServicoResumoDTO(com.kronoly.Entity.Servico servico) {
+    public ServicoUpdateDTO(com.kronoly.Entity.Servico servico) {
         this.idServico = servico.getIdServico();
         this.descricao = servico.getDescricao();
         this.tempoEstimado = servico.getTempoEstimado();

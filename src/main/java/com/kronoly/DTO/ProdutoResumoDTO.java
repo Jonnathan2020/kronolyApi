@@ -20,4 +20,7 @@ public class ProdutoResumoDTO {
         this.valorCusto = produto.getValorCusto();
         this.valorVenda = produto.getValorVenda();
     }
+
+    public ProdutoResumoDTO(int idProduto, String descricao, double valorCusto, double valorVenda) {
+    }
 }

@@ -9,8 +9,11 @@ import com.kronoly.Entity.Produto;
 import com.kronoly.Entity.Servico;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.cglib.core.Local;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,11 +25,12 @@ public class AgendamentoCreateDTO {
     public String descricao;
     private List<Produto> produtos = new ArrayList<>();
     private List<Servico> servicos = new ArrayList<>();
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm")
-    public LocalDateTime dataInicio;
+    public LocalDate data;
+    public LocalTime hora;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm")
     public LocalDateTime dataFim;
     public String nomeCliente;
+    public int contatoCliente;
     private int idCliente;
     public int idEmpresa;
     public double valorServicos;
@@ -34,3 +38,4 @@ public class AgendamentoCreateDTO {
     public FormaPagtoEnum formaPagtoEnum;
 
 }
+

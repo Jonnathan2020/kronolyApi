@@ -6,10 +6,13 @@ import com.kronoly.DTO.AgendamentoUpdateDTO;
 import com.kronoly.Entity.Agendamento;
 import com.kronoly.Service.AgendamentoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
@@ -36,6 +39,14 @@ public class AgendamentoController {
     @GetMapping("/{id}")
     public AgendamentoDTO consultarPorId(@PathVariable int id){
         return agendamentoService.consultarAgendamentoPorId(id);
+    }
+    @GetMapping("/data/{data}")
+    public List<AgendamentoDTO> consultarPorData(
+            @PathVariable
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate data) {
+
+        return agendamentoService.consultarAgendamentoPorData(data);
     }
 
     @GetMapping("/busca/empresa/{idEmpresa}")

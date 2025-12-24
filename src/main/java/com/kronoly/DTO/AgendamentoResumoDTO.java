@@ -19,6 +19,7 @@ public class AgendamentoResumoDTO {
     private LocalDateTime dataInicio;
     private LocalDateTime dataFim;
     private String nomeCliente;
+    private int contatoCliente;
     private String nomeEmpresa;
     private String statusAgendamento;
     private double valorTotal;
@@ -37,6 +38,7 @@ public class AgendamentoResumoDTO {
             @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm")
             LocalDateTime dataFim,
             String nomeCliente,
+            int contatoCliente,
             String nomeEmpresa,
             String statusAgendamento,
             double valorTotal,
@@ -48,6 +50,7 @@ public class AgendamentoResumoDTO {
         this.dataInicio = dataInicio;
         this.dataFim = dataFim;
         this.nomeCliente = nomeCliente;
+        this.contatoCliente = contatoCliente;
         this.nomeEmpresa = nomeEmpresa;
         this.statusAgendamento = statusAgendamento;
         this.valorTotal = valorTotal;

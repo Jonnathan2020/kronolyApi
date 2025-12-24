@@ -18,16 +18,16 @@ public class Servico {
     private int idServico;
 
     @Column(name = "DESCRICAO")
-    public String descricao;
+    private String descricao;
 
     @Column(name = "TEMPO_ESTIMADO")
-    public LocalDateTime tempoEstimado;
+    private Long tempoEstimado;
 
     @Column(name = "VALOR_CUSTO")
     private double valorCusto;
 
     @Column(name = "VALOR_SERVICO")
-    public double valorServico;
+    private double valorServico;
 
     @ManyToOne
     @JoinColumn(name = "ID_AGENDAMENTO")
