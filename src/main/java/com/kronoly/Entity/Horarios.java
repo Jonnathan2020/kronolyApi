@@ -10,21 +10,20 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Table(name = "HORARIOS_DISPONIVEIS")
-public class HorariosDisponiveis {
+public class Horarios {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID_HORARIO_DISPONIVEL")
     private int idHorario;
 
-    @Column(name = "dataHora")
+    @Column(name = "DATA_HORA")
     public LocalDateTime dataHora;
 
     @Column(name = "disponivel")
     public boolean disponivel;
 
     @ManyToOne
-    @JoinColumn(name = "ID_AGENDA") // chave estrangeira vai na tabela de horários
     private Agenda agenda;
 
     @ManyToOne

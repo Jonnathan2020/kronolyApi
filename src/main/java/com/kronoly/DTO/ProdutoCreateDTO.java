@@ -1,5 +1,6 @@
 package com.kronoly.DTO;
 
+import com.kronoly.Entity.AgendamentoProduto;
 import com.kronoly.Entity.Produto;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,3 +14,4 @@ public class ProdutoCreateDTO {
     private double valorCusto;
     private double valorVenda;
 }
+

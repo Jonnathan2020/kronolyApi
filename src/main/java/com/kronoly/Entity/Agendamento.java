@@ -27,10 +27,11 @@ public class Agendamento {
     public String descricao;
 
     @OneToMany(mappedBy = "agendamento", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Produto> produtos = new ArrayList<>();
+    private List<AgendamentoProduto> produtos = new ArrayList<>();
 
     @OneToMany(mappedBy = "agendamento", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Servico> servicos = new ArrayList<>();
+    private List<AgendamentoServico> servicos = new ArrayList<>();
+
 
     @Column(name = "DATA_INICIO")
     public LocalDateTime dataInicio;
@@ -42,7 +43,7 @@ public class Agendamento {
     public String nomeCliente;
 
     @Column(name = "CONTATO_CLIENTE")
-    public int contatoCliente;
+    public Long contatoCliente;
 
     @ManyToOne
     @JoinColumn(name = "ID_CLIENTE")

@@ -13,7 +13,7 @@ public class ClienteDTO {
     private int idCliente;
     private String documento;
     private String nome;
-    private int telefone;
+    private Long telefone;
     private String imgPerfil;
     private StatusUsuarioEnum statusUsuarioEnum;
 

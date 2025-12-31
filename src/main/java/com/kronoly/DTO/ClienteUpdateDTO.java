@@ -11,6 +11,6 @@ public class ClienteUpdateDTO {
     public String nome;
     public String imgPerfil;
     public StatusUsuarioEnum statusUsuarioEnum;
-    public int telefone;
+    public Long telefone;
 
 }

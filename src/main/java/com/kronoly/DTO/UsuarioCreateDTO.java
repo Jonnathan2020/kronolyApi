@@ -12,7 +12,7 @@ public class UsuarioCreateDTO {
     private String nome;
     private String email;
     private String senha;
-    private int telefone;
+    private Long telefone;
     private TipoUsuarioEnum tipoUsuario;
 
 

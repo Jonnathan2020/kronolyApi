@@ -27,7 +27,7 @@ public class Cliente {
     public String nome;
 
     @Column(name = "TELEFONE")
-    private int telefone;
+    private Long telefone;
 
     @JoinColumn(name = "ENDERECO")
     @OneToOne

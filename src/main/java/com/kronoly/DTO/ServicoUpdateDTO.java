@@ -12,6 +12,7 @@ public class ServicoUpdateDTO {
     private Long tempoEstimado;
     private double valorCusto;
     private double valorServico;
+    private int quantServicos;
 
     public ServicoUpdateDTO(int idServico, String descricao, Long tempoEstimado, double valorCusto, double valorServico) {
         this.idServico = idServico;

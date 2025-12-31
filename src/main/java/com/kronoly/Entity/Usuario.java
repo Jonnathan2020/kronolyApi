@@ -31,7 +31,7 @@ public class Usuario implements UserDetails {
     private String senha;
 
     @Column(name = "TELEFONE")
-    private int telefone;
+    private Long telefone;
 
     //@JoinColumn(name = "CONTATO")
     //@OneToOne

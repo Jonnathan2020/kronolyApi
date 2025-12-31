@@ -17,7 +17,7 @@ public class ClienteCreateDTO {
 
     private String documento;
     public String nome;
-    public int telefone;
+    public Long telefone;
     public String imgPerfil;
     public StatusUsuarioEnum statusUsuarioEnum;
     private Empresa empresa;

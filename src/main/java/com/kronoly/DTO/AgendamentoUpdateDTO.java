@@ -20,14 +20,14 @@ public class AgendamentoUpdateDTO {
     private int idAgendamento;
     public String titulo;
     public String descricao;
-    private List<Produto> produtos = new ArrayList<>();
-    private List<Servico> servicos = new ArrayList<>();
+    private List<ProdutoUpdateDTO> produtos = new ArrayList<>();
+    private List<ServicoUpdateDTO> servicos = new ArrayList<>();
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm")
     public LocalDateTime dataInicio;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm")
     public LocalDateTime dataFim;
     public String nomeCliente;
-    private int contatoCliente;
+    private Long contatoCliente;
     private Cliente cliente;
     public Empresa empresa;
     public double valorServicos;

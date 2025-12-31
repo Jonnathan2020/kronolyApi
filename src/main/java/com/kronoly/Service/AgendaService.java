@@ -21,13 +21,17 @@ public class AgendaService {
     private EmpresaRepository empresaRepository;
 
     public Agenda cadastrarAgenda(AgendaCreateDTO agendaCreateDTO){
+
+        Empresa empresa = empresaRepository.findById(agendaCreateDTO.getIdEmpresa())
+                .orElseThrow(() -> new RuntimeException("Empresa não encontrada"));
+
         Agenda agenda = new Agenda();
 
         agenda.setStatusAgendaEnum(agendaCreateDTO.getStatusAgendaEnum());
         agenda.setHoraAbertura(agendaCreateDTO.getHoraAbertura());
         agenda.setHoraAlmoco(agendaCreateDTO.getHoraAlmoco());
         agenda.setHoraFechamento(agendaCreateDTO.getHoraFechamento());
-        agenda.setEmpresa(agendaCreateDTO.getEmpresa());
+        agenda.setEmpresa(empresa);
         return agendaRepository.save(agenda);
     }
 

@@ -23,14 +23,13 @@ public class AgendamentoCreateDTO {
 
     public String titulo;
     public String descricao;
-    private List<Produto> produtos = new ArrayList<>();
-    private List<Servico> servicos = new ArrayList<>();
+    private List<Integer> produtos = new ArrayList<>();
+    private List<Integer> servicos = new ArrayList<>();
     public LocalDate data;
     public LocalTime hora;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm")
-    public LocalDateTime dataFim;
     public String nomeCliente;
-    public int contatoCliente;
+    public Long contatoCliente;
     private int idCliente;
     public int idEmpresa;
     public double valorServicos;

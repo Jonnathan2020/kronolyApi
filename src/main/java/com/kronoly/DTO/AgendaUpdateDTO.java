@@ -6,20 +6,17 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Getter
 @Setter
 public class AgendaUpdateDTO {
-    public int idAgenda;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm")
-    public LocalDateTime horaAlmoco;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm")
+    private int idAgenda;
+    public LocalTime horaAlmoco;
     public StatusAgendaEnum statusAgendaEnum;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm")
-    public LocalDateTime horaAbertura;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm")
-    public LocalDateTime horaFechamento;
-
+    public LocalTime horaAbertura;
+    public LocalTime horaFechamento;
+    public int idEmpresa;
 }

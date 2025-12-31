@@ -3,14 +3,15 @@ package com.kronoly.Service;
 import com.kronoly.DTO.*;
 import com.kronoly.Entity.*;
 import com.kronoly.Entity.Enuns.StatusAgendamento;
-import com.kronoly.Repository.AgendamentoRepository;
-import com.kronoly.Repository.ClienteRepository;
-import com.kronoly.Repository.EmpresaRepository;
+import com.kronoly.Repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,58 +25,128 @@ public class AgendamentoService {
     private EmpresaRepository empresaRepository;
     @Autowired
     private ClienteRepository clienteRepository;
+    @Autowired
+    private ServicoRepository servicoRepository;
+    @Autowired
+    private ProdutoRepository produtoRepository;
+    @Autowired
+    private AgendamentoProdutoRepository agendamentoProdutoRepository;
+    @Autowired
+    private AgendamentoServicoRepository agendamentoServicoRepository;
 
     private LocalDateTime calcularDataFim(
             LocalDateTime dataInicio,
-            List<Servico> servicos
+            List<AgendamentoServico> servicos
     ) {
         if (dataInicio == null || servicos == null || servicos.isEmpty()) {
             return dataInicio;
         }
 
         long minutosTotais = servicos.stream()
-                .filter(s -> s.getTempoEstimado() != null)
-                .mapToLong(Servico::getTempoEstimado)
+                .mapToLong(s ->
+                        s.getServico().getTempoEstimado()
+                                * s.getQuantServicos()
+                )
                 .sum();
 
         return dataInicio.plusMinutes(minutosTotais);
     }
 
-    public AgendamentoDTO cadastrarAgendamento(AgendamentoCreateDTO agendamentoCreateDTO){
+    /* ============================================================
+       CADASTRAR AGENDAMENTO
+       ============================================================ */
+    public AgendamentoDTO cadastrarAgendamento(AgendamentoCreateDTO dto) {
 
-        Cliente cliente = clienteRepository.findById(agendamentoCreateDTO.getIdCliente())
+        Cliente cliente = clienteRepository.findById(dto.getIdCliente())
                 .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
-        Empresa empresa = empresaRepository.findById(agendamentoCreateDTO.getIdEmpresa())
+
+        Empresa empresa = empresaRepository.findById(dto.getIdEmpresa())
                 .orElseThrow(() -> new RuntimeException("Empresa não encontrada"));
 
+        // 🔹 CRIA AGENDAMENTO
         Agendamento agendamento = new Agendamento();
-        agendamento.setTitulo(agendamentoCreateDTO.getTitulo());
-        agendamento.setDescricao(agendamentoCreateDTO.getDescricao());
-        agendamento.setProdutos(agendamentoCreateDTO.getProdutos());
-        agendamento.setServicos(agendamentoCreateDTO.getServicos());
-        LocalDateTime dataHora = LocalDateTime.of(
-                agendamentoCreateDTO.getData(),
-                agendamentoCreateDTO.getHora()
-        );
-        agendamento.setDataInicio(dataHora);
-        // 🔥 calcula automaticamente
-        LocalDateTime dataFim = calcularDataFim(
-                dataHora,
-                agendamentoCreateDTO.getServicos()
-        );
-        agendamento.setDataFim(dataFim);
-        agendamento.setNomeCliente(agendamentoCreateDTO.getNomeCliente());
-        agendamento.setContatoCliente(agendamentoCreateDTO.getContatoCliente());
+        agendamento.setTitulo(dto.getTitulo());
+        agendamento.setDescricao(dto.getDescricao());
+
+        LocalDateTime dataInicio = LocalDateTime.of(dto.getData(), dto.getHora());
+        agendamento.setDataInicio(dataInicio);
+
+        agendamento.setNomeCliente(dto.getNomeCliente());
+        agendamento.setContatoCliente(dto.getContatoCliente());
         agendamento.setCliente(cliente);
         agendamento.setEmpresa(empresa);
-        agendamento.setValorServicos(agendamentoCreateDTO.getValorServicos());
-        agendamento.setValorProdutos(agendamentoCreateDTO.getValorProdutos());
-        agendamento.setFormaPagtoEnum(agendamentoCreateDTO.getFormaPagtoEnum());
+        agendamento.setFormaPagtoEnum(dto.getFormaPagtoEnum());
         agendamento.setStatusAgendamento(StatusAgendamento.PENDENTE);
 
-        return new AgendamentoDTO(agendamentoRepository.save(agendamento));
+    /* ============================================================
+       PRODUTOS
+       ============================================================ */
+        double totalProdutos = 0;
+
+        if (dto.getProdutos() != null) {
+            for (int idProduto : dto.getProdutos()) {
+
+                Produto produto = produtoRepository.findById(idProduto)
+                        .orElseThrow(() -> new RuntimeException("Produto não encontrado"));
+
+                AgendamentoProduto ap = new AgendamentoProduto();
+                ap.setAgendamento(agendamento);
+                ap.setProduto(produto);
+                ap.setQuantProdutos(1);
+                ap.setValorCusto(produto.getValorCusto());
+                ap.setValorVenda(produto.getValorVenda());
+
+                agendamento.getProdutos().add(ap);
+                totalProdutos += ap.getValorVenda();
+            }
+        }
+
+    /* ============================================================
+       SERVIÇOS
+       ============================================================ */
+        double totalServicos = 0;
+
+        if (dto.getServicos() == null || dto.getServicos().isEmpty()) {
+            throw new RuntimeException("Agendamento precisa ter ao menos um serviço");
+        }
+
+        for (int idServico : dto.getServicos()) {
+
+            Servico servico = servicoRepository.findById(idServico)
+                    .orElseThrow(() -> new RuntimeException("Serviço não encontrado"));
+
+            AgendamentoServico as = new AgendamentoServico();
+            as.setAgendamento(agendamento);
+            as.setServico(servico);
+            as.setQuantServicos(1);
+            as.setValorCusto(servico.getValorCusto());
+            as.setValorServico(servico.getValorServico());
+
+            agendamento.getServicos().add(as);
+            totalServicos += as.getValorServico();
+        }
+
+    /* ============================================================
+       FINALIZA
+       ============================================================ */
+        agendamento.setValorProdutos(totalProdutos);
+        agendamento.setValorServicos(totalServicos);
+
+        agendamento.setDataFim(
+                calcularDataFim(
+                        dataInicio,
+                        agendamento.getServicos()
+                )
+        );
+
+        // 🔥 UM ÚNICO SAVE
+        return new AgendamentoDTO(
+                agendamentoRepository.save(agendamento)
+        );
     }
 
+
+    @Transactional(readOnly = true)
     public List<AgendamentoDTO> consultarAgendamentos() {
 
         List<Agendamento> agendamentos = agendamentoRepository.findAll();
@@ -84,84 +155,106 @@ public class AgendamentoService {
             throw new IllegalArgumentException("Nenhum agendamento encontrado!");
         }
 
-        // Converte cada Agendamento em AgendamentoDTO
-        return agendamentos.stream().map(agendamento -> {
+        return agendamentos.stream().map(ag -> new AgendamentoDTO(
+                ag.getIdAgendamento(),
+                ag.getTitulo(),
+                ag.getDescricao(),
+                ag.getDataInicio(),
+                ag.getDataFim(),
+                ag.getNomeCliente(),
+                ag.getContatoCliente(),
+                ag.getValorServicos(),
+                ag.getValorProdutos(),
+                ag.getFormaPagtoEnum(),
+                ag.getStatusAgendamento(),
 
-            // Cria DTOs dos produtos
-            List<ProdutoResumoDTO> produtosDTO = agendamento.getProdutos().stream()
-                    .map(ProdutoResumoDTO::new)
-                    .collect(Collectors.toList());
+                ag.getCliente() != null ? new ClienteResumoDTO(
+                        ag.getCliente().getIdCliente(),
+                        ag.getCliente().getDocumento(),
+                        ag.getCliente().getNome(),
+                        ag.getCliente().getTelefone()
+                ) : null,
 
-            // Cria DTOs dos serviços
-            List<ServicoResumoDTO> servicosDTO = agendamento.getServicos().stream()
-                    .map(ServicoResumoDTO::new)
-                    .collect(Collectors.toList());
+                ag.getEmpresa() != null ? new EmpresaResumoDTO(
+                        ag.getEmpresa().getIdEmpresa(),
+                        ag.getEmpresa().getDocumento(),
+                        ag.getEmpresa().getRazaoSocial(),
+                        ag.getEmpresa().getNomeFantasia(),
+                        ag.getEmpresa().getRepresentante(),
+                        ag.getEmpresa().getLogo(),
+                        ag.getEmpresa().getStatusEmpresaEnum()
+                ) : null,
 
-            ClienteResumoDTO clienteDTO = null;
+                ag.getProdutos().stream()
+                        .map(ProdutoResumoDTO::new)
+                        .collect(Collectors.toList()),
 
-            if (agendamento.getCliente() != null) {
-                clienteDTO = new ClienteResumoDTO(
-                        agendamento.getCliente().getIdCliente(),
-                        agendamento.getCliente().getDocumento(),
-                        agendamento.getCliente().getNome(),
-                        agendamento.getCliente().getTelefone()
-                );
-            }
-
-            EmpresaResumoDTO empresaDTO = null;
-
-            if (agendamento.getEmpresa() != null) {
-                empresaDTO = new EmpresaResumoDTO(
-                        agendamento.getEmpresa().getIdEmpresa(),
-                        agendamento.getEmpresa().getDocumento(),
-                        agendamento.getEmpresa().getRazaoSocial(),
-                        agendamento.getEmpresa().getNomeFantasia(),
-                        agendamento.getEmpresa().getRepresentante(),
-                        agendamento.getEmpresa().getLogo(),
-                        agendamento.getEmpresa().getStatusEmpresaEnum()
-                );
-            }
-            // Retorna o AgendamentoDTO pronto
-            return new AgendamentoDTO(
-                    agendamento.getIdAgendamento(),
-                    agendamento.getTitulo(),
-                    agendamento.getDescricao(),
-                    agendamento.getDataInicio(),
-                    agendamento.getDataFim(),
-                    agendamento.getNomeCliente(),
-                    agendamento.getContatoCliente(),
-                    agendamento.getValorServicos(),
-                    agendamento.getValorProdutos(),
-                    agendamento.getFormaPagtoEnum(),
-                    agendamento.getStatusAgendamento(),
-                    clienteDTO,
-                    empresaDTO,
-                    produtosDTO,
-                    servicosDTO
-            );
-
-        }).collect(Collectors.toList());
+                ag.getServicos().stream()
+                        .map(ServicoResumoDTO::new)
+                        .collect(Collectors.toList())
+        )).collect(Collectors.toList());
     }
 
-    public AgendamentoDTO consultarAgendamentoPorId(int idAgendamento){
-        Agendamento agendamentoEspecifico = agendamentoRepository.findById(idAgendamento)
-                .orElseThrow(() -> new IllegalArgumentException("Agendamento não encontrada!!"));
+    /* ============================================================
+       CONSULTAR POR ID
+       ============================================================ */
+    @Transactional(readOnly = true)
+    public AgendamentoDTO consultarAgendamentoPorId(int idAgendamento) {
 
-        return new AgendamentoDTO(agendamentoRepository.save(agendamentoEspecifico));
+        Agendamento ag = agendamentoRepository.findById(idAgendamento)
+                .orElseThrow(() -> new IllegalArgumentException("Agendamento não encontrado!!"));
+
+        return new AgendamentoDTO(
+                ag.getIdAgendamento(),
+                ag.getTitulo(),
+                ag.getDescricao(),
+                ag.getDataInicio(),
+                ag.getDataFim(),
+                ag.getNomeCliente(),
+                ag.getContatoCliente(),
+                ag.getValorServicos(),
+                ag.getValorProdutos(),
+                ag.getFormaPagtoEnum(),
+                ag.getStatusAgendamento(),
+
+                ag.getCliente() != null ? new ClienteResumoDTO(
+                        ag.getCliente().getIdCliente(),
+                        ag.getCliente().getDocumento(),
+                        ag.getCliente().getNome(),
+                        ag.getCliente().getTelefone()
+                ) : null,
+
+                ag.getEmpresa() != null ? new EmpresaResumoDTO(
+                        ag.getEmpresa().getIdEmpresa(),
+                        ag.getEmpresa().getDocumento(),
+                        ag.getEmpresa().getRazaoSocial(),
+                        ag.getEmpresa().getNomeFantasia(),
+                        ag.getEmpresa().getRepresentante(),
+                        ag.getEmpresa().getLogo(),
+                        ag.getEmpresa().getStatusEmpresaEnum()
+                ) : null,
+
+                ag.getProdutos().stream()
+                        .map(ProdutoResumoDTO::new)
+                        .collect(Collectors.toList()),
+
+                ag.getServicos().stream()
+                        .map(ServicoResumoDTO::new)
+                        .collect(Collectors.toList())
+        );
     }
 
+    /* ============================================================
+       CONSULTAR POR DATA
+       ============================================================ */
+    @Transactional(readOnly = true)
     public List<AgendamentoDTO> consultarAgendamentoPorData(LocalDate data) {
 
-        LocalDateTime inicioDoDia = data.atStartOfDay();
-        LocalDateTime fimDoDia = data.atTime(23, 59, 59);
+        LocalDateTime inicio = data.atStartOfDay();
+        LocalDateTime fim = data.atTime(23, 59, 59);
 
-        List<Agendamento> agendamentos =
-                agendamentoRepository.findByDataInicioBetween(
-                        inicioDoDia,
-                        fimDoDia
-                );
-
-        return agendamentos.stream()
+        return agendamentoRepository.findByDataInicioBetween(inicio, fim)
+                .stream()
                 .map(ag -> new AgendamentoDTO(
                         ag.getIdAgendamento(),
                         ag.getTitulo(),
@@ -175,17 +268,14 @@ public class AgendamentoService {
                         ag.getFormaPagtoEnum(),
                         ag.getStatusAgendamento(),
 
-                        ag.getCliente() != null
-                                ? new ClienteResumoDTO(
+                        ag.getCliente() != null ? new ClienteResumoDTO(
                                 ag.getCliente().getIdCliente(),
                                 ag.getCliente().getDocumento(),
                                 ag.getCliente().getNome(),
                                 ag.getCliente().getTelefone()
-                        )
-                                : null,
+                        ) : null,
 
-                        ag.getEmpresa() != null
-                                ? new EmpresaResumoDTO(
+                        ag.getEmpresa() != null ? new EmpresaResumoDTO(
                                 ag.getEmpresa().getIdEmpresa(),
                                 ag.getEmpresa().getDocumento(),
                                 ag.getEmpresa().getRazaoSocial(),
@@ -193,95 +283,49 @@ public class AgendamentoService {
                                 ag.getEmpresa().getRepresentante(),
                                 ag.getEmpresa().getLogo(),
                                 ag.getEmpresa().getStatusEmpresaEnum()
-                        )
-                                : null,
+                        ) : null,
 
-                        ag.getProdutos() != null
-                                ? ag.getProdutos().stream()
-                                .map(ProdutoResumoDTO::new)
-                                .toList()
-                                : null,
-
-                        ag.getServicos() != null
-                                ? ag.getServicos().stream()
-                                .map(ServicoResumoDTO::new)
-                                .toList()
-                                : null
-                ))
-                .toList();
+                        ag.getProdutos().stream().map(ProdutoResumoDTO::new).toList(),
+                        ag.getServicos().stream().map(ServicoResumoDTO::new).toList()
+                )).toList();
     }
 
-
+    /* ============================================================
+       CONSULTAR POR EMPRESA
+       ============================================================ */
+    @Transactional(readOnly = true)
     public List<AgendamentoDTO> consultarAgendamentosPorEmpresa(int idEmpresa) {
-        // 1️⃣ Verifica se a empresa existe
+
         empresaRepository.findById(idEmpresa)
                 .orElseThrow(() -> new IllegalArgumentException("Empresa não encontrada"));
 
-        // 2️⃣ Busca todas as agendas da empresa
-        List<Agendamento> agendamentos = agendamentoRepository.findByEmpresa_idEmpresa(idEmpresa);
-
-        if (agendamentos.isEmpty()) {
-            throw new IllegalArgumentException("Nenhum agendamento encontrado para essa empresa");
-        }
-
-        // 3️⃣ Mapeia para DTOs
-        return agendamentos.stream().map(ag-> new AgendamentoDTO(
-                ag.getIdAgendamento(),
-                ag.getTitulo(),
-                ag.getDescricao(),
-                ag.getDataInicio(),
-                ag.getDataFim(),
-                ag.getNomeCliente(),
-                ag.getContatoCliente(),
-                ag.getValorServicos(),
-                ag.getValorProdutos(),
-                ag.getFormaPagtoEnum(),
-                ag.getStatusAgendamento(),
-                // Conversão do Cliente
-                ag.getCliente() != null ? new ClienteResumoDTO(
-                        ag.getCliente().getIdCliente(),
-                        ag.getCliente().getDocumento(),
-                        ag.getCliente().getNome(),
-                        ag.getCliente().getTelefone()
-                ) : null,
-
-                // Conversão da Empresa
-                ag.getEmpresa() != null ? new EmpresaResumoDTO(
-                        ag.getEmpresa().getIdEmpresa(),
-                        ag.getEmpresa().getDocumento(),
-                        ag.getEmpresa().getRazaoSocial(),
-                        ag.getEmpresa().getNomeFantasia(),
-                        ag.getEmpresa().getRepresentante(),
-                        ag.getEmpresa().getLogo(),
-                        ag.getEmpresa().getStatusEmpresaEnum()
-                ) : null,
-
-                // Conversão da lista de Produtos
-                ag.getProdutos() != null ? ag.getProdutos().stream()
-                        .map(ProdutoResumoDTO::new)
-                        .collect(Collectors.toList()) : null,
-
-                // Conversão da lista de Serviços
-                ag.getServicos() != null ? ag.getServicos().stream()
-                        .map(ServicoResumoDTO::new)
-                        .collect(Collectors.toList()) : null
-        )).toList();
+        return agendamentoRepository.findByEmpresa_idEmpresa(idEmpresa)
+                .stream()
+                .map(this::consultarAgendamentoPorIdInterno)
+                .toList();
     }
 
+    /* ============================================================
+       CONSULTAR POR CLIENTE
+       ============================================================ */
+    @Transactional(readOnly = true)
     public List<AgendamentoDTO> consultarAgendamentosPorCliente(int idCliente) {
-        // Primeiro, verifica se a empresa existe
+
         clienteRepository.findById(idCliente)
-                .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrada"));
+                .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado"));
 
-        // Busca todas as agendas dessa empresa
-        List<Agendamento> agendamentos = agendamentoRepository.findByCliente_idCliente(idCliente);
+        return agendamentoRepository.findByCliente_idCliente(idCliente)
+                .stream()
+                .map(this::consultarAgendamentoPorIdInterno)
+                .toList();
+    }
 
-        if (agendamentos.isEmpty()) {
-            throw new IllegalArgumentException("Nenhum agendamento encontrado para essa empresa");
-        }
+    /* ============================================================
+       MÉTODO AUXILIAR INTERNO (SEM SAVE)
+       ============================================================ */
+    private AgendamentoDTO consultarAgendamentoPorIdInterno(Agendamento ag) {
 
-        // 3️⃣ Mapeia para DTOs
-        return agendamentos.stream().map(ag -> new AgendamentoDTO(
+        return new AgendamentoDTO(
                 ag.getIdAgendamento(),
                 ag.getTitulo(),
                 ag.getDescricao(),
@@ -293,7 +337,7 @@ public class AgendamentoService {
                 ag.getValorProdutos(),
                 ag.getFormaPagtoEnum(),
                 ag.getStatusAgendamento(),
-                // Conversão do Cliente
+
                 ag.getCliente() != null ? new ClienteResumoDTO(
                         ag.getCliente().getIdCliente(),
                         ag.getCliente().getDocumento(),
@@ -301,7 +345,6 @@ public class AgendamentoService {
                         ag.getCliente().getTelefone()
                 ) : null,
 
-                // Conversão da Empresa
                 ag.getEmpresa() != null ? new EmpresaResumoDTO(
                         ag.getEmpresa().getIdEmpresa(),
                         ag.getEmpresa().getDocumento(),
@@ -312,16 +355,9 @@ public class AgendamentoService {
                         ag.getEmpresa().getStatusEmpresaEnum()
                 ) : null,
 
-                // Conversão da lista de Produtos
-                ag.getProdutos() != null ? ag.getProdutos().stream()
-                        .map(ProdutoResumoDTO::new)
-                        .collect(Collectors.toList()) : null,
-
-                // Conversão da lista de Serviços
-                ag.getServicos() != null ? ag.getServicos().stream()
-                        .map(ServicoResumoDTO::new)
-                        .collect(Collectors.toList()) : null
-        )).toList();
+                ag.getProdutos().stream().map(ProdutoResumoDTO::new).toList(),
+                ag.getServicos().stream().map(ServicoResumoDTO::new).toList()
+        );
     }
 
     public Agendamento alterarAgendamento(int idAgendamento, AgendamentoUpdateDTO agendamentoUpdateDTO){
@@ -349,11 +385,57 @@ public class AgendamentoService {
         if(agendamentoUpdateDTO.getFormaPagtoEnum() != null){
             agendamentoExistente.setFormaPagtoEnum(agendamentoUpdateDTO.getFormaPagtoEnum());
         }
-        if(agendamentoUpdateDTO.getProdutos() != null){
-            agendamentoExistente.setProdutos(agendamentoUpdateDTO.getProdutos());
+        if (agendamentoUpdateDTO.getProdutos() != null) {
+
+            // 1️⃣ Remove vínculos antigos
+            agendamentoProdutoRepository.deleteByAgendamento(agendamentoExistente);
+
+            BigDecimal totalProdutos = BigDecimal.ZERO;
+
+            // 2️⃣ Cria novos vínculos
+            for (ProdutoUpdateDTO dto : agendamentoUpdateDTO.getProdutos()) {
+
+                Produto produto = produtoRepository.findById(dto.getIdProduto())
+                        .orElseThrow(() -> new RuntimeException("Produto não encontrado"));
+
+                AgendamentoProduto ap = new AgendamentoProduto();
+                ap.setAgendamento(agendamentoExistente);
+                ap.setProduto(produto);
+                ap.setQuantProdutos(dto.getQuantProduto());
+                ap.setValorVenda(dto.getValorVenda());
+
+                agendamentoProdutoRepository.save(ap);
+            }
+
+            agendamentoExistente.setValorProdutos(agendamentoExistente.valorProdutos);
         }
-        if (agendamentoUpdateDTO.getServicos() != null){
-            agendamentoExistente.setServicos(agendamentoUpdateDTO.getServicos());
+
+        if (agendamentoUpdateDTO.getServicos() != null) {
+
+            // 1️⃣ Remove vínculos antigos
+            agendamentoServicoRepository.deleteByAgendamento(agendamentoExistente);
+
+            BigDecimal totalProdutos = BigDecimal.ZERO;
+
+            // 2️⃣ Cria novos vínculos
+            for (ServicoUpdateDTO servicoUpdateDTO : agendamentoUpdateDTO.getServicos()) {
+
+                Servico servico = servicoRepository.findById(servicoUpdateDTO.getIdServico())
+                        .orElseThrow(() -> new RuntimeException("Produto não encontrado"));
+
+                AgendamentoServico as = new AgendamentoServico();
+                as.setAgendamento(agendamentoExistente);
+                as.setServico(servico);
+
+                as.setQuantServicos(servicoUpdateDTO.getQuantServicos());
+                as.setTempoEstimado(servicoUpdateDTO.getTempoEstimado());
+                as.setValorCusto(servicoUpdateDTO.getValorCusto());
+                as.setValorServico(servicoUpdateDTO.getValorServico());
+
+                agendamentoServicoRepository.save(as);
+            }
+
+            agendamentoExistente.setValorProdutos(agendamentoExistente.valorProdutos);
         }
         if(agendamentoUpdateDTO.getValorProdutos() != -1000){
             agendamentoExistente.setValorProdutos(agendamentoUpdateDTO.getValorProdutos());

@@ -1,6 +1,7 @@
 package com.kronoly.Controller;
 
 import com.kronoly.DTO.*;
+import com.kronoly.Entity.Produto;
 import com.kronoly.Service.ProdutoService;
 import com.kronoly.Service.ServicoService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,12 +31,12 @@ public class ProdutoController {
         return produtoService.consultarProdutos();
     }
 
-    @GetMapping("/consulta/{id}")
+    @GetMapping("/consulta/id/{id}")
     public ProdutoResumoDTO consultarProdutoPorId(@PathVariable int id){
         return produtoService.consultarProdutoPorId(id);
     }
 
-    @GetMapping("/consulta/{descricao}")
+    @GetMapping("/consulta/descricao/{descricao}")
     public List<ProdutoResumoDTO> consultarProdutoPorDescricao(@PathVariable String descricao){
         return produtoService.consultarProdutoPorDescricao(descricao);
     }

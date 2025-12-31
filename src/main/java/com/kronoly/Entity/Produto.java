@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Getter
 @Setter
@@ -24,9 +27,8 @@ public class Produto {
     @Column(name = "VALOR_VENDA")
     private double valorVenda;
 
-    @ManyToOne
-    @JoinColumn(name = "ID_AGENDAMENTO")
-    private Agendamento agendamento;
+    @OneToMany(mappedBy = "produto")
+    private List<AgendamentoProduto> agendamentos = new ArrayList<>();
 
 
 }

@@ -26,7 +26,7 @@ public class AgendamentoDTO {
     private LocalDateTime dataFim;
 
     private String nomeCliente;
-    private int contatoCliente;
+    private Long contatoCliente;
     private double valorServicos;
     private double valorProdutos;
     private FormaPagtoEnum formaPagtoEnum;
@@ -45,7 +45,7 @@ public class AgendamentoDTO {
             LocalDateTime dataInicio,
             LocalDateTime dataFim,
             String nomeCliente,
-            int contatoCliente,
+            Long contatoCliente,
             double valorServicos,
             double valorProdutos,
             FormaPagtoEnum formaPagtoEnum,
@@ -80,6 +80,7 @@ public class AgendamentoDTO {
         this.dataInicio = agendamento.getDataInicio();
         this.dataFim = agendamento.getDataFim();
         this.nomeCliente = agendamento.getNomeCliente();
+        this.contatoCliente = agendamento.getContatoCliente();
         this.valorServicos = agendamento.getValorServicos();
         this.valorProdutos = agendamento.getValorProdutos();
         this.formaPagtoEnum = agendamento.getFormaPagtoEnum();

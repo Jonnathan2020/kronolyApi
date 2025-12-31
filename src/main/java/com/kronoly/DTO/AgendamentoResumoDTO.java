@@ -19,7 +19,7 @@ public class AgendamentoResumoDTO {
     private LocalDateTime dataInicio;
     private LocalDateTime dataFim;
     private String nomeCliente;
-    private int contatoCliente;
+    private Long contatoCliente;
     private String nomeEmpresa;
     private String statusAgendamento;
     private double valorTotal;
@@ -38,7 +38,7 @@ public class AgendamentoResumoDTO {
             @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm")
             LocalDateTime dataFim,
             String nomeCliente,
-            int contatoCliente,
+            Long contatoCliente,
             String nomeEmpresa,
             String statusAgendamento,
             double valorTotal,
