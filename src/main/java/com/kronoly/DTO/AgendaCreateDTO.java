@@ -6,6 +6,7 @@ import com.kronoly.Entity.Enuns.StatusAgendaEnum;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -15,10 +16,15 @@ import java.util.List;
 @Setter
 public class AgendaCreateDTO {
     private int idAgenda;
-    public LocalTime horaAlmoco;
+    public int idEmpresa;
     public StatusAgendaEnum statusAgendaEnum;
     public LocalTime horaAbertura;
+    public LocalTime horaAlmoco;
+    public LocalTime horaRetornoAlmoco;
     public LocalTime horaFechamento;
-    public int idEmpresa;
+    public LocalDateTime criadoEm;
+    public LocalDateTime atualizadoEm;
+    public int duracaoSlot;
+    public List<DayOfWeek> diasSemana;
 
 }

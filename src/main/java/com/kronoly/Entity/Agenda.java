@@ -23,7 +23,7 @@ public class Agenda {
     private int idAgenda;
 
     @OneToMany(mappedBy = "agenda", cascade = CascadeType.ALL, orphanRemoval = true)
-    public List<Horarios> horarios = new ArrayList<>();
+    public List<Horario> horarios = new ArrayList<>();
 
     @Column(name = "HORA_ALMOCO")
     public LocalTime horaAlmoco;

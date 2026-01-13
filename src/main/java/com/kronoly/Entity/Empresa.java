@@ -49,7 +49,7 @@ public class Empresa {
     private List<Cliente> clientes = new ArrayList<>();
 
     @OneToMany(mappedBy = "empresa", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Horarios> horarios = new ArrayList<>();
+    private List<Horario> horarios = new ArrayList<>();
 
     @OneToMany(mappedBy = "empresa", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Agenda> agendas = new ArrayList<>();

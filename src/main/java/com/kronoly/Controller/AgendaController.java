@@ -1,6 +1,7 @@
 package com.kronoly.Controller;
 
 import com.kronoly.DTO.AgendaCreateDTO;
+import com.kronoly.DTO.AgendaResponseDTO;
 import com.kronoly.DTO.AgendaUpdateDTO;
 import com.kronoly.Entity.Agenda;
 import com.kronoly.Service.AgendaService;
@@ -20,33 +21,52 @@ public class AgendaController {
     private AgendaService agendaService;
 
     @PostMapping("/registro")
-    public ResponseEntity<Agenda> cadastrarAgenda(@RequestBody AgendaCreateDTO agendaCreateDTO){
-        Agenda agendaCriada = agendaService.cadastrarAgenda(agendaCreateDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(agendaCriada);
+    public ResponseEntity<AgendaResponseDTO> cadastrarAgenda(@RequestBody AgendaCreateDTO agendaCreateDTO){
+        // Chama a service que já salva a agenda, gera os horários e retorna o DTO com o resumo
+        AgendaResponseDTO response = agendaService.cadastrarAgenda(agendaCreateDTO);
+
+        // Retorna Status 201 (Created) e o corpo com os dados formatados
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping
-    public List<Agenda> consultarAgenda(){
-        return agendaService.consultarAgendas();
+    public ResponseEntity<List<AgendaResponseDTO>> consultarAgenda(){
+        List<AgendaResponseDTO> lista = agendaService.consultarAgendas();
+        return ResponseEntity.ok(lista);
     }
 
     @GetMapping("/{id}")
-    public Agenda consultarPorId(@PathVariable int id){
-        return agendaService.consultarAgendaPorId(id);
+    public ResponseEntity<AgendaResponseDTO>
+    consultarPorId(@PathVariable int id){
+        return ResponseEntity.ok(agendaService.consultarAgendaPorId(id));
+
     }
 
     @GetMapping("/busca/{idEmpresa}")
-    public List<Agenda> consultarAgendaPorEmpresa(@PathVariable int idEmpresa){
-        return agendaService.consultarAgendasPorEmpresa(idEmpresa);
+    public ResponseEntity<List<AgendaResponseDTO>> consultarAgendaPorEmpresa(@PathVariable int idEmpresa){
+        return ResponseEntity.ok(agendaService.consultarAgendasPorEmpresa(idEmpresa));
+
     }
 
     @PutMapping("/{id}")
-    public Agenda alterarAgenda(@RequestBody AgendaUpdateDTO agendaUpdateDTO, @PathVariable int id){
-        if(id == agendaUpdateDTO.getIdAgenda()){
-            return agendaService.alterarAgenda(id, agendaUpdateDTO);
+    public ResponseEntity<AgendaResponseDTO> alterarAgenda(
+            @PathVariable int id,
+            @RequestBody AgendaUpdateDTO agendaUpdateDTO) {
+
+        // Validação de segurança: garante que o ID da URL é o mesmo que se deseja alterar
+        // Em 2026, é comum permitir que o DTO não envie o ID, usando o da URL como soberano
+        if (agendaUpdateDTO.getIdAgenda() != 0 && id != agendaUpdateDTO.getIdAgenda()) {
+            return ResponseEntity.badRequest().build();
         }
-        else
-            return null;
+
+        try {
+            // A service agora retorna AgendaResponseDTO
+            AgendaResponseDTO response = agendaService.alterarAgenda(id, agendaUpdateDTO);
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            // Retorna 404 caso a service lance a exceção de "Agenda não encontrada"
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @DeleteMapping("/{id}")

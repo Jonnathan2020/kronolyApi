@@ -58,10 +58,12 @@ public class AgendamentoService {
     public AgendamentoDTO cadastrarAgendamento(AgendamentoCreateDTO dto) {
 
         Cliente cliente = clienteRepository.findById(dto.getIdCliente())
-                .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
+                .orElseGet(() -> clienteRepository.findById(1003)
+                        .orElseThrow(() -> new RuntimeException("Empresa padrão não encontrada no sistema")));
 
         Empresa empresa = empresaRepository.findById(dto.getIdEmpresa())
-                .orElseThrow(() -> new RuntimeException("Empresa não encontrada"));
+                .orElseGet(() -> empresaRepository.findById(2)
+                        .orElseThrow(() -> new RuntimeException("Empresa padrão não encontrada no sistema")));
 
         // 🔹 CRIA AGENDAMENTO
         Agendamento agendamento = new Agendamento();
