@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -16,6 +17,8 @@ import java.util.List;
 public class AgendaUpdateDTO {
     private int idAgenda;
     public int idEmpresa;
+    public LocalDate dataInicio;
+    public LocalDate dataFinal;
     public LocalTime horaAbertura;
     public LocalTime horaAlmoco;
     public LocalTime horaRetornoAlmoco;

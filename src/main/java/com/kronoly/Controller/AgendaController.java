@@ -36,10 +36,8 @@ public class AgendaController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<AgendaResponseDTO>
-    consultarPorId(@PathVariable int id){
+    public ResponseEntity<AgendaResponseDTO> consultarPorId(@PathVariable int id){
         return ResponseEntity.ok(agendaService.consultarAgendaPorId(id));
-
     }
 
     @GetMapping("/busca/{idEmpresa}")

@@ -11,24 +11,27 @@ import java.time.LocalTime;
 @Entity
 @Getter
 @Setter
-@Table(name = "HORARIO_DISPONIVEIS")
-public class Horario{
+@Table(name = "TBL_HORARIOS_DISPONIVEIS",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"DATA_DISPONIVEL", "HORA_INICIO"})
+        })
+public class Horario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID_HORARIO_DISPONIVEL")
     private int idHorario;
 
-    @Column(name = "DATA_DISPONIVEL")
-    private LocalDate data; // Ex: 2026-01-12
+    @Column(name = "DATA_DISPONIVEL", columnDefinition = "DATE", nullable = false)
+    private LocalDate data;
 
-    @Column(name = "HORA_INICIO")
-    private LocalTime horaInicio; // Ex: 08:00
+    @Column(name = "HORA_INICIO", columnDefinition = "TIME", nullable = false)
+    private LocalTime horaInicio;
 
-    @Column(name = "HORA_FIM")
-    private LocalTime horaFim; // Ex: 08:30 (Calculado com duracaoSlot)
+    @Column(name = "HORA_FIM", columnDefinition = "TIME", nullable = false)
+    private LocalTime horaFim;
 
-    @Column(name = "disponivel")
+    @Column(name = "DISPONIVEL", nullable = false)
     private boolean disponivel;
 
     @ManyToOne
@@ -38,3 +41,4 @@ public class Horario{
     @JoinColumn(name = "ID_EMPRESA")
     private Empresa empresa;
 }
+

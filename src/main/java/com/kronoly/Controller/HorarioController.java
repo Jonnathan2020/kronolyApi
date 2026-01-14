@@ -1,10 +1,16 @@
 package com.kronoly.Controller;
 
+import com.kronoly.DTO.AgendaResponseDTO;
+import com.kronoly.DTO.HorarioResponseDTO;
 import com.kronoly.Entity.Horario;
 import com.kronoly.Service.HorarioService;
+import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 @CrossOrigin(origins = "*")
@@ -16,13 +22,41 @@ public class HorarioController {
     private HorarioService horarioService;
 
     @GetMapping
-    public List<Horario> consultarHorarios(){
-        return horarioService.consultarHorarios();
+    public ResponseEntity<List<HorarioResponseDTO>> consultarHorarios(){
+        List<HorarioResponseDTO> lista = horarioService.consultarHorarios();
+        return ResponseEntity.ok(lista);
+    }
+
+    @GetMapping("/disponiveis")
+    public ResponseEntity<List<HorarioResponseDTO>> consultarHorariosPorDisponibilidade(){
+        return ResponseEntity.ok(horarioService.consultarHorariosPorDisponibilidade());
+    }
+
+    @GetMapping("/indisponiveis")
+    public ResponseEntity<List<HorarioResponseDTO>> consultarHorariosPorIndisponibilidade(){
+        return ResponseEntity.ok(horarioService.consultarHorariosPorIndisponibilidade());
+    }
+
+    @GetMapping("/disponiveis/{data}")
+    public ResponseEntity<List<HorarioResponseDTO>> consultarHorariosPorDataEDisponibilidade(@PathVariable LocalDate data){
+        return ResponseEntity.ok(horarioService.consultarHorariosPorDataEDisponibilidade(data));
     }
 
     @GetMapping("/{id}")
-    public Horario consultarHorarioPorId(@PathVariable int id){
-        return horarioService.consultarHorarioPorId(id);
+    public ResponseEntity<HorarioResponseDTO> consultarHorarioPorId(@PathVariable int id){
+        return ResponseEntity.ok(horarioService.consultarHorarioPorId(id));
 
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<HorarioResponseDTO> alterarDisponibilidade(@PathVariable int id){
+
+        return ResponseEntity.ok(horarioService.alterarDisponibilidadePorId(id));
+    }
+
+    @PutMapping("/{data}/{horaInicio}")
+    public ResponseEntity<HorarioResponseDTO> alterarDisponibilidadePorDataEHora(@PathVariable LocalDate data,@PathVariable LocalTime horaInicio){
+
+        return ResponseEntity.ok(horarioService.alterarDisponibilidadePorDataEHora(data, horaInicio));
     }
 }

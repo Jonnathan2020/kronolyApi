@@ -32,7 +32,11 @@ public class AgendaService {
     private AgendaResponseDTO converterParaResponseDTO(Agenda agenda) {
         AgendaResponseDTO response = new AgendaResponseDTO();
         response.setIdAgenda(agenda.getIdAgenda());
+        response.setDataInicio(agenda.getDataInicio());
+        response.setDataFinal(agenda.getDataFinal());
         response.setHoraAbertura(agenda.getHoraAbertura());
+        response.setHoraAlmoco(agenda.getHoraAlmoco());
+        response.setHoraRetornoAlmoco(agenda.getHoraRetornoAlmoco());
         response.setHoraFechamento(agenda.getHoraFechamento());
         response.setDuracaoSlot(agenda.getDuracaoSlot());
         response.setDiasSemana(agenda.getDiasSemana());
@@ -63,6 +67,8 @@ public class AgendaService {
         Agenda agenda = new Agenda();
 
         agenda.setStatusAgendaEnum(StatusAgendaEnum.ABERTA);
+        agenda.setDataInicio(agendaCreateDTO.getDataInicio());
+        agenda.setDataFinal(agendaCreateDTO.getDataFinal());
         agenda.setHoraAbertura(agendaCreateDTO.getHoraAbertura());
         agenda.setHoraAlmoco(agendaCreateDTO.getHoraAlmoco());
         agenda.setHoraRetornoAlmoco(agendaCreateDTO.getHoraRetornoAlmoco());
@@ -118,12 +124,20 @@ public class AgendaService {
         Agenda agendaExistente = agendaRepository.findById(idAgenda)
                 .orElseThrow(() -> new IllegalArgumentException("Agenda não encontrada!!!"));
 
-        if (agendaUpdateDTO.getHoraAbertura() != null){
-            agendaExistente.setHoraAbertura(agendaUpdateDTO.getHoraAbertura());
-        }
-
         if(agendaUpdateDTO.getStatusAgendaEnum() != null){
             agendaExistente.setStatusAgendaEnum(agendaUpdateDTO.getStatusAgendaEnum());
+        }
+
+        if(agendaUpdateDTO.getDataInicio() != null){
+            agendaExistente.setDataInicio(agendaUpdateDTO.getDataInicio());
+        }
+
+        if (agendaUpdateDTO.getDataFinal() != null){
+            agendaExistente.setDataFinal(agendaUpdateDTO.getDataFinal());
+        }
+
+        if (agendaUpdateDTO.getHoraAbertura() != null){
+            agendaExistente.setHoraAbertura(agendaUpdateDTO.getHoraAbertura());
         }
 
         if(agendaUpdateDTO.getHoraAlmoco() != null){

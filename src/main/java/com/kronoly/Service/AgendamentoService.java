@@ -33,6 +33,8 @@ public class AgendamentoService {
     private AgendamentoProdutoRepository agendamentoProdutoRepository;
     @Autowired
     private AgendamentoServicoRepository agendamentoServicoRepository;
+    @Autowired
+    private HorarioService horarioService;
 
     private LocalDateTime calcularDataFim(
             LocalDateTime dataInicio,
@@ -72,7 +74,6 @@ public class AgendamentoService {
 
         LocalDateTime dataInicio = LocalDateTime.of(dto.getData(), dto.getHora());
         agendamento.setDataInicio(dataInicio);
-
         agendamento.setNomeCliente(dto.getNomeCliente());
         agendamento.setContatoCliente(dto.getContatoCliente());
         agendamento.setCliente(cliente);
@@ -140,6 +141,11 @@ public class AgendamentoService {
                         agendamento.getServicos()
                 )
         );
+
+        //Tornar horário selecionado indisponivel
+        horarioService.bloquearHorariosDoAgendamento(agendamento.getDataInicio(), agendamento.getDataFim());
+        //horarioService.alterarDisponibilidadePorDataEHora(dto.getData(), dto.getHora());
+
 
         // 🔥 UM ÚNICO SAVE
         return new AgendamentoDTO(

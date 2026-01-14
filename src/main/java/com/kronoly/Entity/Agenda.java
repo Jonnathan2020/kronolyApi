@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -40,6 +41,12 @@ public class Agenda {
 
     @Column(name = "HORA_FECHAMENTO")
     public LocalTime horaFechamento;
+
+    @Column(name = "DATA_INICIO")
+    public LocalDate dataInicio;
+
+    @Column(name = "DATA_FINAL")
+    public LocalDate dataFinal;
 
     @ManyToOne
     @JoinColumn(name = "id_empresa")
