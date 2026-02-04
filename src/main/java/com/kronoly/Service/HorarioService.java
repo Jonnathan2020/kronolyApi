@@ -184,7 +184,7 @@ public class HorarioService {
     }
 
     @Transactional
-    public void bloquearHorariosDoAgendamento(LocalDateTime dataInicio, LocalDateTime dataFim) {
+    public List<HorarioResponseDTO> bloquearHorariosDoAgendamento(LocalDateTime dataInicio, LocalDateTime dataFim) {
 
         LocalDate data = dataInicio.toLocalDate();
         LocalTime horaInicio = dataInicio.toLocalTime();
@@ -202,6 +202,12 @@ public class HorarioService {
         }
 
         horarioRepository.saveAll(horarios);
+
+        List<Horario> horariosDisponiveis = horarioRepository.findByDataAndDisponivel(data, false);
+
+        return horariosDisponiveis.stream()
+                .map(this::converterParaResponseDTO) // Reaproveita o metodo que já criamos
+                .toList(); // No Java 16+ ou 17 (padrão em 2026), usa-se .toList()
     }
 
 }

@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -58,5 +59,11 @@ public class HorarioController {
     public ResponseEntity<HorarioResponseDTO> alterarDisponibilidadePorDataEHora(@PathVariable LocalDate data,@PathVariable LocalTime horaInicio){
 
         return ResponseEntity.ok(horarioService.alterarDisponibilidadePorDataEHora(data, horaInicio));
+    }
+
+    //Para requisição e verificação do funcionamento no service
+    @PutMapping("/bloquearHorarios/{dataInicio}/{dataFim}")
+    public ResponseEntity<List<HorarioResponseDTO>> bloquearHorariosDoAgendamento(@PathVariable LocalDateTime dataInicio, @PathVariable LocalDateTime dataFim){
+        return ResponseEntity.ok(horarioService.bloquearHorariosDoAgendamento(dataInicio, dataFim));
     }
 }

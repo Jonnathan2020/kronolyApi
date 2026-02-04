@@ -142,15 +142,15 @@ public class AgendamentoService {
                 )
         );
 
+        Agendamento agendamentoSalvo = agendamentoRepository.save(agendamento);
+
         //Tornar horário selecionado indisponivel
-        horarioService.bloquearHorariosDoAgendamento(agendamento.getDataInicio(), agendamento.getDataFim());
-        //horarioService.alterarDisponibilidadePorDataEHora(dto.getData(), dto.getHora());
+        //horarioService.bloquearHorariosDoAgendamento(agendamento.getDataInicio(), agendamento.getDataFim());
+        horarioService.alterarDisponibilidadePorDataEHora(dto.getData(), dto.getHora());
 
 
         // 🔥 UM ÚNICO SAVE
-        return new AgendamentoDTO(
-                agendamentoRepository.save(agendamento)
-        );
+        return new AgendamentoDTO(agendamentoSalvo);
     }
 
 
@@ -329,7 +329,7 @@ public class AgendamentoService {
     }
 
     /* ============================================================
-       MÉTODO AUXILIAR INTERNO (SEM SAVE)
+       METODO AUXILIAR INTERNO (SEM SAVE)
        ============================================================ */
     private AgendamentoDTO consultarAgendamentoPorIdInterno(Agendamento ag) {
 
