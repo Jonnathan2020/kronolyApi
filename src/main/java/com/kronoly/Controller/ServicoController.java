@@ -32,12 +32,12 @@ public class ServicoController {
         return servicoService.consultarServicos();
     }
 
-    @GetMapping("/consulta/{id}")
+    @GetMapping("/consultaId/{id}")
     public ServicoResumoDTO consultarServicoPorId(@PathVariable int id){
         return servicoService.consultarServicoPorId(id);
     }
 
-    @GetMapping("/consulta/{descricao}")
+    @GetMapping("/consultaDesc/{descricao}")
     public List<ServicoResumoDTO> consultarServicoPorDescricao(@PathVariable String descricao){
         return servicoService.consultarServicoPorDescricao(descricao);
     }
