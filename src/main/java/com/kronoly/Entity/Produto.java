@@ -27,6 +27,9 @@ public class Produto {
     @Column(name = "VALOR_VENDA")
     private double valorVenda;
 
+    @Column(name = "STATUS_ATIVO")
+    private boolean ativo;
+
     @OneToMany(mappedBy = "produto")
     private List<AgendamentoProduto> agendamentos = new ArrayList<>();
 

@@ -25,6 +25,7 @@ public class ProdutoService {
         produto.setDescricao(produtoCreateDTO.getDescricao());
         produto.setValorCusto(produtoCreateDTO.getValorCusto());
         produto.setValorVenda(produtoCreateDTO.getValorVenda());
+        produto.setAtivo(true);
 
         return new ProdutoResumoDTO(produtoRepository.save(produto));
     }
@@ -36,7 +37,7 @@ public class ProdutoService {
             throw new IllegalArgumentException("Nenhum produto encontrado!");
         }
 
-        return produtos.stream().map(produto -> new ProdutoResumoDTO(
+        return produtos.stream().filter(Produto::isAtivo).map(produto -> new ProdutoResumoDTO(
                         produto.getIdProduto(),
                         produto.getDescricao(),
                         produto.getValorCusto(),
@@ -59,7 +60,7 @@ public class ProdutoService {
             throw new IllegalArgumentException("Nenhum produto encontrado!");
         }
 
-        return produtoExistente.stream().map(produto -> new ProdutoResumoDTO(
+        return produtoExistente.stream().filter(Produto::isAtivo).map(produto -> new ProdutoResumoDTO(
                         produto.getIdProduto(),
                         produto.getDescricao(),
                         produto.getValorCusto(),
@@ -69,8 +70,8 @@ public class ProdutoService {
     }
 
     public ProdutoResumoDTO alterarProduto(int idProduto, ProdutoUpdateDTO produtoUpdateDTO){
-                Produto produtoExistente = produtoRepository.findById(idProduto)
-                .orElseThrow(() -> new IllegalArgumentException("Agendamento não encontrado!!!"));
+        Produto produtoExistente = produtoRepository.findById(idProduto)
+                .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado!!!"));
 
         if (produtoUpdateDTO.getDescricao() != null){
             produtoExistente.setDescricao(produtoUpdateDTO.getDescricao());
@@ -88,7 +89,11 @@ public class ProdutoService {
     }
 
     public void deleteProduto(int idProduto){
-        produtoRepository.deleteById(idProduto);
+        Produto produtoExistente = produtoRepository.findById(idProduto)
+                .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado!!!"));
+
+        produtoExistente.setAtivo(false);
+        produtoRepository.save(produtoExistente);
     }
 
 

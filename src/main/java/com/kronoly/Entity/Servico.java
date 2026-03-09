@@ -29,6 +29,9 @@ public class Servico {
     @Column(name = "VALOR_SERVICO")
     private double valorServico;
 
+    @Column(name = "STATUS_ATIVO")
+    private boolean ativo;
+
     @ManyToOne
     @JoinColumn(name = "ID_AGENDAMENTO")
     private Agendamento agendamento;

@@ -429,13 +429,14 @@ public class AgendamentoService {
             for (ServicoUpdateDTO servicoUpdateDTO : agendamentoUpdateDTO.getServicos()) {
 
                 Servico servico = servicoRepository.findById(servicoUpdateDTO.getIdServico())
-                        .orElseThrow(() -> new RuntimeException("Produto não encontrado"));
+                        .orElseThrow(() -> new RuntimeException("Serviço não encontrado"));
 
                 AgendamentoServico as = new AgendamentoServico();
                 as.setAgendamento(agendamentoExistente);
                 as.setServico(servico);
 
-                as.setQuantServicos(servicoUpdateDTO.getQuantServicos());
+                //seria para contabilizar os serviços
+                //as.setQuantServicos();
                 as.setTempoEstimado(servicoUpdateDTO.getTempoEstimado());
                 as.setValorCusto(servicoUpdateDTO.getValorCusto());
                 as.setValorServico(servicoUpdateDTO.getValorServico());

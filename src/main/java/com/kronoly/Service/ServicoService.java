@@ -26,6 +26,7 @@ public class ServicoService {
         servico.setTempoEstimado(servicoCreateDTO.getTempoEstimado());
         servico.setValorCusto(servicoCreateDTO.getValorCusto());
         servico.setValorServico(servicoCreateDTO.getValorServico());
+        servico.setAtivo(true);
 
         return new ServicoResumoDTO(servicoRepository.save(servico));
     }
@@ -37,7 +38,7 @@ public class ServicoService {
             throw new IllegalArgumentException("Nenhum serviço encontrado!");
         }
 
-        return servicos.stream().map(servico -> new ServicoResumoDTO(
+        return servicos.stream().filter(Servico::isAtivo).map(servico -> new ServicoResumoDTO(
                 servico.getIdServico(),
                 servico.getDescricao(),
                 servico.getTempoEstimado(),
@@ -61,7 +62,7 @@ public class ServicoService {
             throw new IllegalArgumentException("Nenhum serviço encontrado!");
         }
 
-        return servicoExistente.stream().map(servico -> new ServicoResumoDTO(
+        return servicoExistente.stream().filter(Servico::isAtivo).map(servico -> new ServicoResumoDTO(
                         servico.getIdServico(),
                         servico.getDescricao(),
                         servico.getTempoEstimado(),
@@ -73,7 +74,7 @@ public class ServicoService {
 
     public ServicoResumoDTO alterarServico(int idServico, ServicoUpdateDTO servicoUpdateDTO){
         Servico servicoExistente = servicoRepository.findById(idServico)
-                .orElseThrow(() -> new IllegalArgumentException("Agendamento não encontrado!!!"));
+                .orElseThrow(() -> new IllegalArgumentException("Serviço não encontrado!!!"));
 
         if (servicoUpdateDTO.getDescricao() != null){
             servicoExistente.setDescricao(servicoUpdateDTO.getDescricao());
@@ -93,6 +94,11 @@ public class ServicoService {
     }
 
     public void deleteServico(int idServico){
-        servicoRepository.deleteById(idServico);
+        Servico servicoExistente = servicoRepository.findById(idServico)
+                .orElseThrow(() -> new IllegalArgumentException("Serviço não encontrado!!!"));
+
+        servicoExistente.setAtivo(false);
+
+        servicoRepository.save(servicoExistente);
     }
 }

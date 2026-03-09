@@ -1,5 +1,6 @@
 package com.kronoly.DTO;
 
+import com.kronoly.Entity.Servico;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,22 +13,15 @@ public class ServicoUpdateDTO {
     private Long tempoEstimado;
     private double valorCusto;
     private double valorServico;
-    private int quantServicos;
+    private boolean ativo = true;
 
-    public ServicoUpdateDTO(int idServico, String descricao, Long tempoEstimado, double valorCusto, double valorServico) {
+    public ServicoUpdateDTO(int idServico, String descricao, Long tempoEstimado, double valorCusto, double valorServico, boolean ativo) {
         this.idServico = idServico;
         this.descricao = descricao;
         this.tempoEstimado = tempoEstimado;
         this.valorCusto = valorCusto;
         this.valorServico = valorServico;
+        this.ativo = ativo;
     }
 
-    // Construtor auxiliar para conversão direta
-    public ServicoUpdateDTO(com.kronoly.Entity.Servico servico) {
-        this.idServico = servico.getIdServico();
-        this.descricao = servico.getDescricao();
-        this.tempoEstimado = servico.getTempoEstimado();
-        this.valorCusto = servico.getValorCusto();
-        this.valorServico = servico.getValorServico();
-    }
 }

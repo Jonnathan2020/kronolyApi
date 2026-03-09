@@ -42,7 +42,7 @@ public class ProdutoController {
     }
 
     @PutMapping("/{id}")
-    public ProdutoResumoDTO alterarServico(@PathVariable int id, @RequestBody ProdutoUpdateDTO produtoUpdateDTO){
+    public ProdutoResumoDTO alterarProduto(@PathVariable int id, @RequestBody ProdutoUpdateDTO produtoUpdateDTO){
         if(id == produtoUpdateDTO.getIdProduto()){
             return produtoService.alterarProduto(id,produtoUpdateDTO);
         }

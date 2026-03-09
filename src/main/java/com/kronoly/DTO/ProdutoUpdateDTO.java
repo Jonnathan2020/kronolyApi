@@ -12,4 +12,5 @@ public class ProdutoUpdateDTO {
     private int quantProduto;
     private double valorCusto;
     private double valorVenda;
+    private boolean ativo;
 }
