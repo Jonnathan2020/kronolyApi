@@ -1,0 +1,88 @@
+services:
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+
+    container_name: kronoly-sqlserver
+
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "*123456HAS*"
+
+    ports:
+      - "1433:1433"
+
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "/opt/mssql-tools18/bin/sqlcmd",
+          "-S",
+          "localhost",
+          "-U",
+          "sa",
+          "-P",
+          "*123456HAS*",
+          "-Q",
+          "SELECT 1",
+          "-C"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+    restart: unless-stopped
+
+  sqlserver-init:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+
+    container_name: kronoly-sqlserver-init
+
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+
+    command: >
+      /bin/bash -c "
+      sleep 15;
+      /opt/mssql-tools18/bin/sqlcmd
+      -S sqlserver
+      -U sa
+      -P '*123456HAS*'
+      -Q \"
+      IF DB_ID('KronolyApi_DB') IS NULL
+      BEGIN
+          CREATE DATABASE KronolyApi_DB;
+      END
+      \"
+      -C
+      "
+
+  backend:
+    build:
+      context: .
+
+    container_name: kronoly-api
+
+    depends_on:
+      sqlserver-init:
+        condition: service_completed_successfully
+
+    ports:
+      - "8080:8080"
+
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:sqlserver://sqlserver:1433;databaseName=KronolyApi_DB;encrypt=true;trustServerCertificate=true"
+      SPRING_DATASOURCE_USERNAME: "sa"
+      SPRING_DATASOURCE_PASSWORD: "*123456HAS*"
+
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: "true"
+
+    restart: unless-stopped
+
+volumes:
+  sqlserver_data:
